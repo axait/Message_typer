@@ -12,9 +12,11 @@ class message_typer():
         message = input()
         print("Enter numbers of message to sent :")
         no_message = int(input())
-        return no_message ,message
+        print("Add message number with message OR not | 0 for False and  1 for True :")
+        index = int(input())
+        return no_message ,message ,index
 
-    def auto_message(self ,no_messages : int ,message : str ,send_delay : int ,index : int) -> None :
+    def auto_message(self ,message : str ,no_messages : int ,send_delay : int ,index : int) -> None :
         """This funstions will type type {message} {no_messages}"""
         import time
         import pyautogui as pag
@@ -76,7 +78,7 @@ class message_typer():
 
 def main():
     classobject = message_typer()
-    no_message ,message =classobject.take_message_nomessage_input()
+    no_message ,message ,index =classobject.take_message_nomessage_input()
     # 
     send_delay = input("Enter message send delay (Default is 0) : ")
     # 
@@ -84,17 +86,22 @@ def main():
         send_delay = 0
     else:
         send_delay = int(send_delay)
-    index = int(input("Enter index will true(1) or false(0) : "))
-    classobject.auto_message( no_message ,message ,send_delay,index)
+    print("")
+    print(f"Send Delay: {send_delay} seconds")
+    print(f"Message: {message}")
+    print(f"No. of messages : {no_message}")
+    print(f"Index : {index}")
+    print("")
+    classobject.auto_message( message ,no_message ,send_delay,index)
     # 
     print("---------Done--------")
     print(" ")
 
 if __name__ == '__main__' :
-    try :
-        main()
-    except Exception as error :
-        print(error)
-    print("HELP : index 0 for False or index 1 for true ")
-    input("Press ENTER to exit")
-
+    while True:
+        try :
+            main()
+        except Exception as error :
+            print(error)
+        print("HELP : index 0 for False or index 1 for true ")
+        input("Press ENTER to continue")

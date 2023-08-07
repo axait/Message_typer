@@ -1,22 +1,21 @@
-import argparse
-
 def args_func() -> vars:
-    parser = argparse.ArgumentParser(description='Argument Parser for cli')
+    import argparse
+    parser = argparse.ArgumentParser(description='Argument guide for cli mode')
     parser.add_argument('--senddelay', '-d', type=float, default=0.0,
-                        help='Specify the delay time in seconds before sending a message')
-    parser.add_argument('--message', '-m', type=str,
-                        help='Provide a message to be sent')
-    parser.add_argument('--nomessage', '-n', type=int,
-                        help='How much message you want to send')
-    parser.add_argument('--index', '-i', type=int,
-                        help='Add message number with message value will be [ 0,1 ]  0 for False and  1 for True')
+                            help='Specify the delay time in seconds before sending a message (Default is 0)')
+    parser.add_argument('--message', '-m', type=str, default="None",
+                        help='Provide a message to be sent (Default is None)')
+    parser.add_argument('--nomessage', '-n', type=int, default=0,
+                        help='How much message you want to send (Default is 0)')
+    parser.add_argument('--index', '-i', type=int, default=0,
+                        help='Add message number with message value will be [ 0,1 ]  0 for False and  1 for True  (Default is 0)')
     # 
     args = parser.parse_args()
     # 
     print("")
     print(f"Send Delay: {args.senddelay} seconds")
     print(f"Message: {args.message}")
-    print(f"No. of messages {args.nomessage}")
+    print(f"No. of messages : {args.nomessage}")
     index = "True" if args.index == 1 else "False"
     print(f"Index : {index}")
     print("")
@@ -24,7 +23,7 @@ def args_func() -> vars:
     return args
 
 
-def auto_message(no_messages : int ,message : str ,send_delay : int ,index : int) -> None :
+def auto_message(message : str ,no_messages : int ,send_delay : int ,index : int) -> None :
     """This funstions will type type {message} {no_messages}"""
     import time
     import pyautogui as pag
@@ -68,14 +67,11 @@ def auto_message(no_messages : int ,message : str ,send_delay : int ,index : int
 
 def main():
     args =args_func()
-    if args.senddelay =="":
-        args.senddelay = 0
-    else:
-        args.senddelay = int(args.senddelay)
-    auto_message( args.nomessage ,args.message ,args.senddelay ,args.index)
+    auto_message( message=args.message ,no_messages=args.nomessage ,send_delay=args.senddelay ,index=args.index)
     # 
     print("---------Done--------")
     print(" ")
 
 if __name__ == '__main__' :
     main()
+
