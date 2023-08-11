@@ -24,6 +24,7 @@ def auto_message( message : str ,no_messages : int ,send_delay : int ,index : in
         import time
         import pyautogui as pag
         msg_sent_text.delete( 0.0,END )
+        msg_sent_time_taken_entry.delete( 0,END )
         # For safety
         def delay_3seconds():
             # msg_sent_text
