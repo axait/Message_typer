@@ -54,27 +54,11 @@ class message_typer():
             # Print time taken by program
             print(" ")
             print("Time taken to send messages :")
-            print(f"{time.time()-start}s")
             print(" ")
-
-    def auto_message_insta(self ,no_messages : int ,message : str ) -> None :
-        """This funstions will type {message} and sleep for a while {no_messages} . you can use it for dending message online like insta """
-        ...
-        # # For safety
-        # time.sleep(5)
-        # # Start measuring time
-        # print("Message Started to send :")
-        # start = time.time()
-        # for i in range(no_messages):
-        #     pag.write(f"{message}")
-        #     time.sleep(0.3)
-        #     pag.press("enter")
-        #     time.sleep(0.3)
-        #     print(i+1 , end=" , ")
-        # print("---------Done--------")
-        # print(" ")
-        # # Print time taken by program
-        # print(f"{time.time()-start}s")
+            if (time.time()-start) < 60 :
+                print(f"{time.time()-start} seconds")
+            else:
+                print(f"{ (time.time()-start)/60 } minutes")
 
 def main():
     classobject = message_typer()

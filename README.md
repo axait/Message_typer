@@ -4,7 +4,7 @@
 # Command line utility
     It support command line utility
     - options Detail is given below :
-|  Options  | Short Options | Details | Default|
+    |  Options  | Short Options | Details | Default|
 |:----------:|:-----:|:-----------|:--------:|
 |--message |-m| To input message | "None"|
 |--nomessage |-n| To input numbers of message snend | 0|
