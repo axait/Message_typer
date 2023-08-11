@@ -115,7 +115,7 @@ def on_dropdown_selected(event):
 def main():
     root = Tk()
     root.title("Auto Message Sender")
-    root.wm_attributes("-topmost", True)
+    # root.wm_attributes("-topmost", True)
     root.resizable(False,False)
     root.geometry("600x550")
 
