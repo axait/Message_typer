@@ -98,7 +98,7 @@ def start_sending() -> None :
         global message_var , no_message_var , message_delay_var , index_var , message_sent_time_var
         get_inputs()
         if check_blank_inputs() :
-            error_label.config(text="None"  , fg="white")
+            error_label.config(text="Waiting for 3 seconds"  , fg="green")
             auto_message( message_var , int(no_message_var) , int(message_delay_var) , int(index_var) )
 
 
