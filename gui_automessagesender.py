@@ -1,13 +1,14 @@
 from tkinter import *
 from tkinter import ttk
-import datetime ,time ,threading
+import datetime ,time ,threading , sys
 
 message_var = ""
 no_message_var = 0
 message_delay_var = 0
 index_var = 0
 message_sent_time_var = "None"
-
+def exit():
+    sys.exit()
 
 def current_time() -> None :
     def current_time_thread():
