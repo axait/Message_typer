@@ -109,8 +109,17 @@ def diasable_button_func(tk_button : Button , thread_auto_message_sender : threa
         tk_button.config(state=DISABLED)
         thread_auto_message_sender.join()
         tk_button.config(state=NORMAL)
+    def reset_time_sent_msg_var_func():
+        def reset_time_sent_msg_sub_func():
+            global thread_auto_message_send_at_time , message_sent_time_var
+            thread_auto_message_send_at_time.join()
+            message_sent_time_var = "None"
+        thread_reset_message_send_at_time_var = threading.Thread(target=reset_time_sent_msg_sub_func )
+        thread_reset_message_send_at_time_var.start()
     thread_disable_enable_button = threading.Thread(target=diasable_button_sub_func , args=(tk_button , thread_auto_message_sender))
     thread_disable_enable_button.start()
+    reset_time_sent_msg_var_func()
+
 
 def start_sending() -> None :
     try :
@@ -124,10 +133,13 @@ def start_sending() -> None :
             if message_sent_time_var != "None" :
                 msg_sent_text.insert(0.0 , f"Waiting for time {message_sent_time_var}" )
                 error_label.config(text=f"Waiting for time {message_sent_time_var}"  , fg="green")
+                global thread_auto_message_send_at_time
                 thread_auto_message_send_at_time = threading.Thread(target=send_msg_at_time , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var) , message_sent_time_var ))
                 thread_auto_message_send_at_time.start()
                 # To disable button after message started to avoid multi threads of thread_auto_message_send
                 diasable_button_func(sending_button ,thread_auto_message_send_at_time)
+
+
             else :
                 error_label.config(text="Waiting for 3 seconds"  , fg="green")
 
