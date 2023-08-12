@@ -18,7 +18,6 @@ def current_time() -> None :
     thread_current_time = threading.Thread(target=current_time_thread)
     thread_current_time.start()
 
-
 def auto_message( message : str ,no_messages : int ,send_delay : int ,index : int , sent_time : str = "Nonestr") -> None :
         """This funstions will type type {message} {no_messages}"""
         import time
@@ -28,7 +27,7 @@ def auto_message( message : str ,no_messages : int ,send_delay : int ,index : in
         # For safety
         def delay_3seconds():
             # msg_sent_text
-            msg_sent_text.insert(0.0,"\n Waiting for # seconds ")
+            msg_sent_text.insert(0.0,"\n Waiting for 3 seconds ")
             time.sleep(1)
             msg_sent_text.insert(END,"\n 1s ")
             time.sleep(2)
@@ -38,13 +37,15 @@ def auto_message( message : str ,no_messages : int ,send_delay : int ,index : in
             # Start measuring time
             msg_sent_text.insert(END,"\n Message Started to send \n")
         delay_3seconds()
+        error_label.config(text=""  , fg="white")
+
         if index == 0 :
             start = time.time()
             for i in range(no_messages):
                 pag.write(f"{message}")
                 pag.press("enter")
                 time.sleep(send_delay)
-                msg_sent_text.insert(END,f"{i+1}\n" )
+                msg_sent_text.insert(END,f"{i+1} , " )
             # Print time taken by program
             if (time.time()-start) < 60 :
                 msg_sent_time_taken_entry.insert(END,f"{time.time()-start} seconds\n")
@@ -57,14 +58,12 @@ def auto_message( message : str ,no_messages : int ,send_delay : int ,index : in
                 pag.write(f"{i+1}. {message}")
                 pag.press("enter")
                 time.sleep(send_delay)
-                msg_sent_text.insert(END,f"{i+1}\n" )
+                msg_sent_text.insert(END,f"{i+1} , " )
             # Print time taken by program
             if (time.time()-start) < 60 :
                 msg_sent_time_taken_entry.insert(END,f"{time.time()-start} seconds\n")
             else:
                 msg_sent_time_taken_entry.insert(END,f"{ (time.time()-start)/60 } minutes\n")
-
-
 
 def get_inputs():
     global message_var , no_message_var , message_delay_var , index_var , message_sent_time_var
@@ -84,7 +83,6 @@ def get_inputs():
     if message_sent_time_entry.get() != "":
         message_sent_time_var = message_sent_time_entry.get()
 
-
 def check_blank_inputs():
     global error_label
     global message_var , no_message_var , message_delay_var , index_var
@@ -93,22 +91,55 @@ def check_blank_inputs():
     else :
         return True
 
+def send_msg_at_time(message_var , no_message_var , message_delay_var , index_var , message_sent_time_var ):
+    """This function will send msgs at time given by user"""
+    while True :
+        if message_sent_time_var == datetime.datetime.now().strftime("%H:%M:%S") :
+            thread_auto_message_send = threading.Thread(target=auto_message , args=(message_var , int(no_message_var) , int(message_delay_var) , int(index_var)))
+            thread_auto_message_send.start()
+            thread_auto_message_send.join()
+            break
+        else :
+            ...
+
+def diasable_button_func(tk_button : Button , thread_auto_message_sender : threading ) -> None :
+    """ To disable button after message started to avoid multi threads of thread_auto_message_send """
+    def diasable_button_sub_func(tk_button : Button, thread_auto_message_sender : threading):
+        tk_button.config(state=DISABLED)
+        thread_auto_message_sender.join()
+        tk_button.config(state=NORMAL)
+    thread_disable_enable_button = threading.Thread(target=diasable_button_sub_func , args=(tk_button , thread_auto_message_sender))
+    thread_disable_enable_button.start()
 
 def start_sending() -> None :
     try :
-        global message_var , no_message_var , message_delay_var , index_var , message_sent_time_var
+        global message_var , no_message_var , message_delay_var , index_var , message_sent_time_var , sending_button , msg_sent_text
         get_inputs()
-        if check_blank_inputs() :
-            error_label.config(text="Waiting for 3 seconds"  , fg="green")
-            auto_message( message_var , int(no_message_var) , int(message_delay_var) , int(index_var) )
 
+
+
+        if check_blank_inputs() :
+
+            if message_sent_time_var != "None" :
+                msg_sent_text.insert(0.0 , f"Waiting for time {message_sent_time_var}" )
+                error_label.config(text=f"Waiting for time {message_sent_time_var}"  , fg="green")
+                thread_auto_message_send_at_time = threading.Thread(target=send_msg_at_time , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var) , message_sent_time_var ))
+                thread_auto_message_send_at_time.start()
+                # To disable button after message started to avoid multi threads of thread_auto_message_send
+                diasable_button_func(sending_button ,thread_auto_message_send_at_time)
+            else :
+                error_label.config(text="Waiting for 3 seconds"  , fg="green")
+
+                thread_auto_message_send = threading.Thread(target=auto_message , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var)))
+                thread_auto_message_send.start()
+                # To disable button after message started to avoid multi threads of thread_auto_message_send
+                diasable_button_func(sending_button ,thread_auto_message_send)
 
         else :
-            error_label.config(text="Please input all value time is optional"  , fg="red")
+            error_label.config(text="Please input all value Sent_Time is optional"  , fg="red")
     except Exception as error :
         error_label.config(text=error , fg="red")
-    print(message_var , no_message_var , message_delay_var , index_var , message_sent_time_var)
-
+    # print(message_var , no_message_var , message_delay_var , index_var , message_sent_time_var)
 
 def on_dropdown_selected(event):
     ...
@@ -170,7 +201,9 @@ def main():
 
     
     # Start Button
-    Button(root,text="Start Sending" ,font=("Arial",15) , relief=SOLID , border=3 , command=start_sending).place(x=20 ,y=160 ,height=37 ,width=540)
+    global sending_button
+    sending_button=Button(root,text="Start Sending" ,font=("Arial",15) , relief=SOLID , border=3 , command=start_sending)
+    sending_button.place(x=20 ,y=160 ,height=37 ,width=540)
 
     # Error label
     global error_label
