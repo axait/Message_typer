@@ -1,6 +1,8 @@
-import customtkinter as ctk
+try :
+    import customtkinter as ctk
+except :
+    import os; os.system("pip install customtkinter")
 from tkinter import END ,NORMAL  , DISABLED ,StringVar , Menu , Button
-from ttkthemes import ThemedStyle
 import datetime ,time ,threading , sys
 
 message_var = ""
@@ -181,6 +183,7 @@ def on_dropdown_selected(event):
 def main():
     root = ctk.CTk()
     root.title("Auto Message Sender")
+    root.resizable(False,True)
     root.geometry("600x580")
     root.minsize(width=600 , height=580 )
 

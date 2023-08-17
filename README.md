@@ -3,17 +3,31 @@
 # Message_typer
  Auto Message_typer
 
+# GUI
+
+This tool also support GUI mode.
+
+- To use this tool in GUI you need to run **gui_automessagesender.py** file
+
+  ### Modern GUI mode
+
+  - To use this tool in GUI you need to run **modern_gui_sendmessage.py** file
+
 # Command line utility
-    It support command line utility
-    - options Detail is given below :
-    |  Options  | Short Options | Details | Default|
-|:----------:|:-----:|:-----------|:--------:|
-|--message |-m| To input message | "None"|
-|--nomessage |-n| To input numbers of message snend | 0|
-|--senddelay |-d| To set delay time after every message sent  | 0|
-|--index |-i| To set message number with message OR not 0 for false AND 1 for True | 0|
+It support command line utility
+- options Detail is given below :
+
+|   Options   | Short Options | Details                                                      | Default |
+| :---------: | :-----------: | :----------------------------------------------------------- | :-----: |
+|  --message  |      -m       | To input message                                             | "None"  |
+| --nomessage |      -n       | To input numbers of message snend                            |    0    |
+| --senddelay |      -d       | To set delay time after every message sent                   |    0    |
+|   --index   |      -i       | To set message number with message OR not 0 for false AND 1 for True |    0    |
+
+
 
 # Console based
+
     This tool can also be used in console.
 
 # Installation
