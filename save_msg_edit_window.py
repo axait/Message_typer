@@ -8,7 +8,7 @@ old_msg = "None"
 
 def refresh_dropdown():
     global select_msg_to_edit_dropdown , edit_msg_entry
-    db = database_editing_class('save_msg.db')
+    db = database_editing_class()
     select_msg_to_edit_dropdown['values'] = ( "Empty" )
     data = db.fetch_all_data()
     for row in data:
@@ -27,14 +27,14 @@ def on_save_msgs_dropdown_selected(events):
 
 def update_func():
     global old_msg , edit_msg_entry
-    db = database_editing_class('save_msg.db')
+    db = database_editing_class()
     db.update_msg(old_message=old_msg , new_message=edit_msg_entry.get())
     refresh_dropdown()
     db.close_connection()
 
 def add_msg_func():
     global old_msg , edit_msg_entry , error_label
-    db = database_editing_class('save_msg.db')
+    db = database_editing_class()
     if old_msg != edit_msg_entry.get() :
         db.add_msg(edit_msg_entry.get())
         error_label.config(text="Message has Saved successfully" , background="green" , fg="white")
@@ -47,7 +47,7 @@ def add_msg_func():
 def delete_msg_func():
     global old_msg , select_msg_to_edit_dropdown , edit_msg_entry , error_label
     if old_msg != "None" :
-        db = database_editing_class('save_msg.db')
+        db = database_editing_class()
         db.delete_msg(old_msg)
         select_msg_to_edit_dropdown['values'] = ( "Empty" )
         data = db.fetch_all_data()
@@ -61,7 +61,7 @@ def delete_msg_func():
 
 def cleardatabase_func():
     global error_label
-    db = database_editing_class('save_msg.db')
+    db = database_editing_class()
     # Create a warning message box.
     result = messagebox.askyesno("Warning", "Are you sure you want to Delete all save Messages?")
 
@@ -89,7 +89,7 @@ def main():
     select_msg_to_edit_dropdown.place(x=11 , y=11 , height=33 , width=(450-(11*2)))
 
     select_msg_to_edit_dropdown['values'] = ( "Empty" )
-    db = database_editing_class('save_msg.db')
+    db = database_editing_class()
     data = db.fetch_all_data()
     for row in data:
         select_msg_to_edit_dropdown["values"] += (row[1],)

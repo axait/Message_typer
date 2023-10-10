@@ -40,7 +40,7 @@ def edit_save_msg():
 
 def save_msg():
     global save_msg_var , message_entry , save_msg_dropdown
-    db = database_editing_class('save_msg.db')
+    db = database_editing_class()
     # if save_msg_var != "Empty":
     if message_entry.get() != "" :
         db.add_msg(message_entry.get())
@@ -322,7 +322,7 @@ def main():
     # Create dropdown Menu
     save_msg_dropdown = ttk.Combobox(root, textvariable=save_msg_var , state="readonly")
     save_msg_dropdown['values'] = ( "Empty" )
-    db = database_editing_class('save_msg.db')
+    db = database_editing_class()
     data = db.fetch_all_data()
     for row in data:
         save_msg_dropdown["values"] += (row[1],)

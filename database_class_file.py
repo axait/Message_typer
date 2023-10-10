@@ -1,9 +1,11 @@
+database_file_location = "save_msg.db"
+
 import sqlite3
 
 class database_editing_class(sqlite3.Connection):
-    def __init__(self, db_name : str ):
+    def __init__(self ):
         # Call the constructor of the parent class (sqlite3.Connection)
-        super().__init__(db_name)
+        super().__init__( database_file_location )
         self.cursor = self.cursor()
 
     def create_table(self):
