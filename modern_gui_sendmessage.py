@@ -126,7 +126,7 @@ def send_msg_at_time(message_var , no_message_var , message_delay_var , index_va
         else :
             ...
 
-def diasable_button_func(tk_button : Button , thread_auto_message_sender : threading ) -> None :
+def disable_button_func(tk_button : Button , thread_auto_message_sender : threading ) -> None :
     """ To disable button after message started to avoid multi threads of thread_auto_message_send """
     def diasable_button_sub_func(tk_button : Button, thread_auto_message_sender : threading):
         tk_button.configure(state=DISABLED)
@@ -142,7 +142,6 @@ def diasable_button_func(tk_button : Button , thread_auto_message_sender : threa
     thread_disable_enable_button = threading.Thread(target=diasable_button_sub_func , args=(tk_button , thread_auto_message_sender))
     thread_disable_enable_button.start()
     reset_time_sent_msg_var_func()
-
 
 def start_sending() -> None :
     try :
@@ -160,7 +159,7 @@ def start_sending() -> None :
                 thread_auto_message_send_at_time = threading.Thread(target=send_msg_at_time , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var) , message_sent_time_var ))
                 thread_auto_message_send_at_time.start()
                 # To disable button after message started to avoid multi threads of thread_auto_message_send
-                diasable_button_func(sending_button ,thread_auto_message_send_at_time)
+                disable_button_func(sending_button ,thread_auto_message_send_at_time)
 
 
             else :
@@ -169,7 +168,7 @@ def start_sending() -> None :
                 thread_auto_message_send = threading.Thread(target=auto_message , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var)))
                 thread_auto_message_send.start()
                 # To disable button after message started to avoid multi threads of thread_auto_message_send
-                diasable_button_func(sending_button ,thread_auto_message_send)
+                disable_button_func(sending_button ,thread_auto_message_send)
 
         else :
             error_label.configure(text="Please input all value Sent_Time is optional"  , fg_color="red")
