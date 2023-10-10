@@ -31,7 +31,7 @@ It support command line utility
     This tool can also be used in console.
 
 # Installation
-    To use it you have [python](https://python.org).
+    - To use it you have [python](https://python.org).
 
 # > NOTE:
     For any reason you want to stop it you can drag your mouse to top left corner of your window then it will stop.
