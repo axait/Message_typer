@@ -38,6 +38,18 @@ def exit():
 def edit_save_msg():
     save_msg_edit_window.main()
 
+def refresh_dropdown():
+    global save_msg_dropdown
+    db = database_editing_class()
+    save_msg_dropdown['values'] = ( "Empty" )
+    data = db.fetch_all_data()
+    for row in data:
+        save_msg_dropdown["values"] += (row[1],)
+    save_msg_dropdown.set("Select A Msg to Send")
+    # edit_msg_entry.delete(0,END)
+    db.close_connection()
+    db.close()
+
 def save_msg():
     global save_msg_var , message_entry , save_msg_dropdown
     db = database_editing_class()
@@ -50,7 +62,7 @@ def save_msg():
             save_msg_dropdown["values"] += (row[1],)
         db.close_connection()
     else:
-        error_label.config(text="First enter msg"  , fg="red")
+        error_label.config(text="First enter msg"  , background="red")
 
 def current_time() -> None :
     def current_time_thread():
@@ -127,7 +139,7 @@ def auto_message( message : str ,no_messages : int ,send_delay : int ,index : in
             # Start measuring time
             msg_sent_text.insert(END,"\n Message Started to send \n")
         delay_3seconds()
-        error_label.config(text=""  , fg="white")
+        error_label.config(text=""  , background="white")
 
         if index == 0 :
             start = time.time()
@@ -162,13 +174,13 @@ def get_inputs():
     message_delay_var = message_sent_delay_entry.get()
     # 
     if dropdown_var.get() == "False" :
-        error_label.config(text="No any errot" , fg="white")
+        error_label.config(text="No any errot" , background="white")
         index_var = 0
     elif dropdown_var.get() == "True" :
-        error_label.config(text="No any errot" , fg="white")
+        error_label.config(text="No any errot" , background="white")
         index_var = 1
     else :
-        error_label.config(text="Please select index value" , fg="red")
+        error_label.config(text="Please select index value" , background="red")
     # message_sent_time_var value set if it is not blank
     if message_sent_time_entry.get() != "":
         message_sent_time_var = message_sent_time_entry.get()
@@ -224,20 +236,20 @@ def start_sending() -> None :
                 if sending_msg_time_validity_check_func(message_sent_time_var):
                     msg_sent_text.delete( 0.0,END )
                     msg_sent_text.insert(0.0 , f"Waiting for time {message_sent_time_var}" )
-                    error_label.config(text=f"Waiting for time {message_sent_time_var}"  , fg="green")
+                    error_label.config(text=f"Waiting for time {message_sent_time_var}"  , background="green")
                     global thread_auto_message_send_at_time
                     thread_auto_message_send_at_time = threading.Thread(target=send_msg_at_time , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var) , message_sent_time_var ))
                     thread_auto_message_send_at_time.start()
                     # To disable button after message started to avoid multi threads of thread_auto_message_send
                     diasable_button_func(sending_button ,thread_auto_message_send_at_time)
                 else:
-                    error_label.config(text="Enter correct send time"  , fg="red")
+                    error_label.config(text="Enter correct send time"  , background="red")
                     msg_sent_text.insert(0.0 , f"Enter correct send time \nTime should be less than 24hours" )
 
 
 
             else :
-                error_label.config(text="Waiting for 3 seconds"  , fg="green")
+                error_label.config(text="Waiting for 3 seconds"  , background="green")
 
                 thread_auto_message_send = threading.Thread(target=auto_message , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var)))
                 thread_auto_message_send.start()
@@ -245,9 +257,9 @@ def start_sending() -> None :
                 diasable_button_func(sending_button ,thread_auto_message_send)
 
         else :
-            error_label.config(text="Please input all value SentTime is optional"  , fg="red")
+            error_label.config(text="Please input all value SentTime is optional"  , background="red")
     except Exception as error :
-        error_label.config(text=error , fg="red")
+        error_label.config(text=error , background="red")
     # print(message_var , no_message_var , message_delay_var , index_var , message_sent_time_var)
 
 def on_dropdown_selected(event):
@@ -345,7 +357,7 @@ def main():
 
     # Error label
     global error_label
-    error_label = Label(root,text="No any error" ,font=("Arial",15) ,fg="blue")
+    error_label = Label(root,text="No any error" ,font=("Arial",15) ,fg="white")
     error_label.place(x=20 ,y=250 ,height=40 ,width=540)
     
     # time taken Label ++ Entry
@@ -366,6 +378,7 @@ def main():
     # Create the Help menu
     menubar.add_command(label="Exit", command=exit)
     menubar.add_command(label="Edit Save Msgs", command=edit_save_msg)
+    menubar.add_command(label="Refresh database", command=refresh_dropdown)
     # Configure the root to use the menubar
     root.config(menu=menubar)
 
