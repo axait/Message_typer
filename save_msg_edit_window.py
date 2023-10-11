@@ -73,6 +73,7 @@ def cleardatabase_func():
 
 def main():
     root = Tk()
+    root.title("Edit Save Messages")
     root.geometry("450x300")
     root.maxsize(450,270)
 
