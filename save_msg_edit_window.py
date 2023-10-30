@@ -128,7 +128,7 @@ def main():
     # Create the menu 
     menubar =Menu(root)
     # Create the Help menu
-    menubar.add_command(label="Exit", command=exit)
+    # menubar.add_command(label="Exit", command=exit)
     menubar.add_command(label="Refresh database", command=refresh_dropdown)
     # Configure the root to use the menubar
     root.config(menu=menubar)
