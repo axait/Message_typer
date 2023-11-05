@@ -2,13 +2,13 @@ try :
     import customtkinter as ctk
 except :
     import os; os.system("pip install customtkinter")
+    import customtkinter as ctk
 
 from database_class_file import database_editing_class
 import save_msg_edit_window
 from tkinter import END ,NORMAL  , DISABLED ,StringVar , Menu , Button
 import datetime ,time ,threading , sys
 import multiprocessing
-import psutil
 
 
 message_var = ""
@@ -31,17 +31,12 @@ class ExitError(Exception):
         self.message = message
 
 def exit():
-    # global thread_current_time , thread_auto_message_send  ,thread_auto_message_send_at_time , thread_disable_enable_button ,  thread_reset_message_send_at_time_var ,  thread_auto_message_sender
-    # global thread_current_time_continuty_teller , thread_current_time
-    # thread_current_time_continuty_teller = False
-    # thread_current_time.join()
-    global thread_current_time_continuty_teller
+    global thread_current_time_continuty_teller 
     thread_current_time_continuty_teller = False
-    time.sleep(1)
     sys.exit()
 
 def current_time() -> None :
-    def current_time_thread():
+    def current_time_thread_func():
         global current_time_entry , thread_current_time_continuty_teller
         while True :
             if thread_current_time_continuty_teller == True :
@@ -51,7 +46,7 @@ def current_time() -> None :
             else :
                 break
     global thread_current_time
-    thread_current_time = threading.Thread(target=current_time_thread)
+    thread_current_time = threading.Thread(target=current_time_thread_func)
     thread_current_time.start()
 
 def edit_save_msg():

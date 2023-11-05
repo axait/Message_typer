@@ -11,8 +11,6 @@ import save_msg_edit_window
 from tkinter import *
 from tkinter import ttk
 import datetime ,time ,threading , sys
-import multiprocessing
-import psutil
 
 
 message_var = ""
