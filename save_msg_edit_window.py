@@ -6,6 +6,10 @@ import threading
 
 old_msg = "None"
 
+def exit():
+    import sys
+    sys.exit()
+
 def refresh_dropdown():
     global select_msg_to_edit_dropdown , edit_msg_entry
     db = database_editing_class()

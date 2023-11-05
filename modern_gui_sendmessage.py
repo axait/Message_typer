@@ -2,8 +2,14 @@ try :
     import customtkinter as ctk
 except :
     import os; os.system("pip install customtkinter")
+
+from database_class_file import database_editing_class
+import save_msg_edit_window
 from tkinter import END ,NORMAL  , DISABLED ,StringVar , Menu , Button
 import datetime ,time ,threading , sys
+import multiprocessing
+import psutil
+
 
 message_var = ""
 no_message_var = 0
@@ -13,6 +19,10 @@ message_sent_time_var = "None"
 
 thread_current_time_continuty_teller = True
 
+
+class Time:
+    """Class for time annotation"""
+    pass
 class ExitError(Exception):
     def __init__(self, message):
         super().__init__(message)
@@ -25,6 +35,9 @@ def exit():
     # global thread_current_time_continuty_teller , thread_current_time
     # thread_current_time_continuty_teller = False
     # thread_current_time.join()
+    global thread_current_time_continuty_teller
+    thread_current_time_continuty_teller = False
+    time.sleep(1)
     sys.exit()
 
 def current_time() -> None :
@@ -40,6 +53,21 @@ def current_time() -> None :
     global thread_current_time
     thread_current_time = threading.Thread(target=current_time_thread)
     thread_current_time.start()
+
+def edit_save_msg():
+    save_msg_edit_window.main()
+
+def refresh_dropdown():
+    global save_msg_dropdown
+    db = database_editing_class()
+    data = db.fetch_all_data()
+    newvalues_save_msg_dropdown = []
+    for row in data:
+        newvalues_save_msg_dropdown.append(row[1])
+    if newvalues_save_msg_dropdown != [] :
+        newvalues_save_msg_dropdown = list(set(newvalues_save_msg_dropdown))
+        save_msg_dropdown.configure(values=newvalues_save_msg_dropdown)
+    db.close_connection()
 
 def auto_message( message : str ,no_messages : int ,send_delay : int ,index : int , sent_time : str = "Nonestr") -> None :
         """This funstions will type type {message} {no_messages}"""
@@ -117,6 +145,7 @@ def check_blank_inputs():
 def send_msg_at_time(message_var , no_message_var , message_delay_var , index_var , message_sent_time_var ):
     """This function will send msgs at time given by user"""
     while True :
+        time.sleep(1)
         if message_sent_time_var == datetime.datetime.now().strftime("%H:%M:%S") :
             global thread_auto_message_send
             thread_auto_message_send = threading.Thread(target=auto_message , args=(message_var , int(no_message_var) , int(message_delay_var) , int(index_var)))
@@ -125,6 +154,45 @@ def send_msg_at_time(message_var , no_message_var , message_delay_var , index_va
             break
         else :
             ...
+
+def sending_msg_time_validity_check_func(sending_msg_time:Time) ->bool:
+    """
+    1. Find TWO " : " 
+    2. Check three parts are int (NOTE:not find three parts BCZ it will be found in first step)
+    3. Check first part is maximum 24 and (second & third) is max 60 or less
+    """
+
+    split_send_time_list = sending_msg_time.split(":")
+
+    # Find TWO " : " means THREE parts of time input
+    if len(split_send_time_list) == 3:
+        # Make variable to check int type of input means time
+        temp_var_for_int_type_detection = False
+        for i in split_send_time_list:
+            try:
+                int(i)
+                temp_var_for_int_type_detection = True
+            except:
+                temp_var_for_int_type_detection = False
+                break
+            # 
+        if temp_var_for_int_type_detection==True:
+            # Check max hours are 24
+            if int(split_send_time_list[0]) <= 24:
+                # Check max minutes are 60
+                if int(split_send_time_list[1])< 60:
+                    # Check max seconds are 60
+                    if int(split_send_time_list[2]) < 60:
+                        validity_of_input_send_time = True
+                    else:
+                        validity_of_input_send_time = False        
+                else:
+                    validity_of_input_send_time = False        
+            else:
+                validity_of_input_send_time = False            
+        else:
+            validity_of_input_send_time = False                
+    return validity_of_input_send_time
 
 def disable_button_func(tk_button : Button , thread_auto_message_sender : threading ) -> None :
     """ To disable button after message started to avoid multi threads of thread_auto_message_send """
@@ -153,14 +221,18 @@ def start_sending() -> None :
         if check_blank_inputs() :
 
             if message_sent_time_var != "None" :
-                msg_sent_text.insert(0.0 , f"Waiting for time {message_sent_time_var}" )
-                error_label.configure(text=f"Waiting for time {message_sent_time_var}"  , fg_color="green")
-                global thread_auto_message_send_at_time
-                thread_auto_message_send_at_time = threading.Thread(target=send_msg_at_time , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var) , message_sent_time_var ))
-                thread_auto_message_send_at_time.start()
-                # To disable button after message started to avoid multi threads of thread_auto_message_send
-                disable_button_func(sending_button ,thread_auto_message_send_at_time)
-
+                if sending_msg_time_validity_check_func(message_sent_time_var):
+                    msg_sent_text.insert(0.0 , f"Waiting for time {message_sent_time_var}" )
+                    error_label.configure(text=f"Waiting for time {message_sent_time_var}"  , fg_color="green")
+                    global thread_auto_message_send_at_time
+                    thread_auto_message_send_at_time = threading.Thread(target=send_msg_at_time , args=(message_var , int(no_message_var) , eval(message_delay_var) , int(index_var) , message_sent_time_var ))
+                    thread_auto_message_send_at_time.start()
+                    # To disable button after message started to avoid multi threads of thread_auto_message_send
+                    disable_button_func(sending_button ,thread_auto_message_send_at_time)
+                else:
+                    error_label.configure(text="Enter correct send time"  , bg_color="red")
+                    msg_sent_text.delete(0.0 , END )
+                    msg_sent_text.insert(0.0 , f"Enter correct send time \nTime should be less than 24hours" )
 
             else :
                 error_label.configure(text="Waiting for 3 seconds"  , fg_color="green")
@@ -176,8 +248,29 @@ def start_sending() -> None :
         error_label.configure(text=error , fg_color="red")
     # print(message_var , no_message_var , message_delay_var , index_var , message_sent_time_var)
 
+def save_msg():
+    global save_msg_var , message_entry , save_msg_dropdown
+    if message_entry.get() != "" :
+        db = database_editing_class()
+        db.add_msg(message_entry.get())
+        data = db.fetch_all_data()
+        newvalues_save_msg_dropdown = []
+        for row in data:
+            newvalues_save_msg_dropdown.append(row[1])
+        if newvalues_save_msg_dropdown != [] :
+            newvalues_save_msg_dropdown = list(set(newvalues_save_msg_dropdown))
+            save_msg_dropdown.configure(values=newvalues_save_msg_dropdown)
+        db.close_connection()
+    else:
+        error_label.configure(text="First enter msg"  , bg_color="red" )
+
 def on_dropdown_selected(event):
     ...
+
+def on_save_msg_dropdown_selected(event):
+    global save_msg_var , message_entry
+    message_entry.delete(0,END)
+    message_entry.insert(0,save_msg_var.get())
 
 def main():
     root = ctk.CTk()
@@ -223,8 +316,6 @@ def main():
     dropdown = ctk.CTkComboBox(master=root, variable=dropdown_var ,height=25 ,width=150 , values=["True" , "False"] )
     dropdown.place(relx=0.15 ,rely=0.24)
 
-    # Bind an event handler to the dropdown
-    dropdown.bind("<<ComboboxSelected>>", on_dropdown_selected)
     # ----------------------------------DROPDOWN_end----------------------------
 
     # Msg sent time Label ++ Entry
@@ -233,32 +324,60 @@ def main():
     message_sent_time_entry = ctk.CTkEntry(root ,font=("Arial",18)  ,height=25 ,width=140 )
     message_sent_time_entry.place(relx=0.71 ,rely=0.24)
 
+    # ----------------------------------DROPDOWN_FOR_saved_msgs----------------------------
+    # Create a StringVar to store the selected item
+    global  save_msg_var , save_msg_dropdown
+    save_msg_var = StringVar()
+    
+    # Create dropdown Menu
+    save_msg_dropdown = ctk.CTkComboBox(root , state="readonly" , command=on_save_msg_dropdown_selected , variable=save_msg_var , height=30 ,width=400 , values=["Empty"] )
+    db = database_editing_class()
+    data = db.fetch_all_data()
+    newvalues_save_msg_dropdown = []
+    for row in data:
+        newvalues_save_msg_dropdown.append(row[1])
+    if newvalues_save_msg_dropdown != [] :
+        newvalues_save_msg_dropdown = list(set(newvalues_save_msg_dropdown))
+        save_msg_dropdown.configure(values=newvalues_save_msg_dropdown)
+    db.close_connection()
+
+    save_msg_dropdown.place(relx=0.02 , rely=0.315)
+    save_msg_dropdown.set("Select A Save Msg")
+
+    # ----------------------------------DROPDOWN_FOR_saved_msgs_end----------------------------
+    # Start Button
+    global save_msg_button
+    save_msg_button=ctk.CTkButton(root,text="Save msg" ,font=("Arial",15) , command=save_msg , height=30 ,width=130 )
+    save_msg_button.place( relx=0.72 , rely=0.315 )
+    
     # Start Button
     global sending_button
     sending_button=ctk.CTkButton(master=root,text="Start Sending" ,font=("Arial",20) , command=start_sending ,height=37 ,width=553 )
-    sending_button.place(relx=0.02 , rely=0.315 )
+    sending_button.place(relx=0.02 , rely=0.405 )
 
     # Error label
     global error_label
     error_label = ctk.CTkLabel(root,text="No any error" ,font=("Arial",18) , fg_color="red" ,height=40 ,width=553 ) 
-    error_label.place(relx=0.02 ,rely=0.394)
+    error_label.place(relx=0.02 ,rely=0.484)
     
     # time taken Label ++ Entry
     global msg_sent_time_taken_entry
-    ctk.CTkLabel(root,text="Time taken :" ,font=("Arial",18) , fg_color="green" ,corner_radius=5 ,height=30 ,width=150 ).place(relx=0.02 ,rely=0.48)
+    ctk.CTkLabel(root,text="Time taken :" ,font=("Arial",18) , fg_color="green" ,corner_radius=5 ,height=30 ,width=150 ).place(relx=0.02 ,rely=0.57)
     msg_sent_time_taken_entry = ctk.CTkEntry(root ,font=("Arial",20) ,height=30 ,width=385 )
-    msg_sent_time_taken_entry.place(relx=0.3 ,rely=0.48)
+    msg_sent_time_taken_entry.place(relx=0.3 ,rely=0.57)
 
     # No. of msg sent
     global msg_sent_text
-    ctk.CTkLabel(root,text="Output:" ,font=("Arial",18.5) , fg_color="blue" , corner_radius=5 ,height=30 ,width=165  ).place(relx=0.02 ,rely=0.56)
-    msg_sent_text = ctk.CTkTextbox(root , font=("Arial",18.5) , height=200 ,width=550 )
-    msg_sent_text.place(relx=0.02 ,rely=0.64 )
+    ctk.CTkLabel(root,text="Output:" ,font=("Arial",18.5) , fg_color="blue" , corner_radius=5 ,height=30 ,width=165  ).place(relx=0.02 ,rely=0.65) #0.56
+    msg_sent_text = ctk.CTkTextbox(root , font=("Arial",18.5) , height=150 ,width=550 )
+    msg_sent_text.place(relx=0.02 ,rely=0.73 )
 
 
     # ------------------------MENU--------------------
     menubar = Menu(master=root)
     menubar.add_command(label="Exit" , command=exit)
+    menubar.add_command(label="Edit Save Msgs", command=edit_save_msg)
+    menubar.add_command(label="Refresh database", command=refresh_dropdown)
 
     root.configure(menu=menubar)
 
@@ -267,5 +386,3 @@ def main():
 
 if __name__ == '__main__' :
     main()
-
-

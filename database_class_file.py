@@ -1,12 +1,29 @@
-database_file_location = "save_msg.db"
+database_file_location = "C:/Program Files/messagetyper/save_msg.db"
+folder_path = "C:/Program Files/messagetyper"
 
+import os
 import sqlite3
 
 class database_editing_class(sqlite3.Connection):
     def __init__(self ):
+        try:
+            os.makedirs(folder_path)
+        except FileExistsError:
+            ...
         # Call the constructor of the parent class (sqlite3.Connection)
         super().__init__( database_file_location )
         self.cursor = self.cursor()
+        try:
+            # Create the save_msg_table with id (auto-increment) and msgs (text)
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS save_msg_table (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    msgs TEXT
+                )
+            ''')
+            self.commit()
+        except:
+            ...
 
     def create_table(self):
         # Create the save_msg_table with id (auto-increment) and msgs (text)
