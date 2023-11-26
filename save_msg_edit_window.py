@@ -7,6 +7,8 @@ import threading
 old_msg = "None"
 
 def exit():
+    """i am This function is not using bcz when it is called it exit the whole program mean 'main_gui_sender_window'
+    is also exited and whole software will be closed by this function """
     import sys
     sys.exit()
 
@@ -14,9 +16,13 @@ def refresh_dropdown():
     global select_msg_to_edit_dropdown , edit_msg_entry
     db = database_editing_class()
     select_msg_to_edit_dropdown['values'] = ( "Empty" )
+    data_for_select_msg_to_edit_dropdown_ereINSERTING_local_var = []
     data = db.fetch_all_data()
     for row in data:
-        select_msg_to_edit_dropdown["values"] += (row[1],)
+        data_for_select_msg_to_edit_dropdown_ereINSERTING_local_var += (row[1],)
+    if data_for_select_msg_to_edit_dropdown_ereINSERTING_local_var != [] :
+        select_msg_to_edit_dropdown["values"] = data_for_select_msg_to_edit_dropdown_ereINSERTING_local_var
+        
     select_msg_to_edit_dropdown.set("Select A Save Msg to Edit")
     edit_msg_entry.delete(0,END)
     db.close_connection()
@@ -75,8 +81,8 @@ def cleardatabase_func():
         refresh_dropdown()
     db.close_connection()
 
-def main():
-    root = Tk()
+def main( window_master ):
+    root = Toplevel()
     root.title("Edit Save Messages")
     root.geometry("450x300")
     root.maxsize(450,270)
@@ -96,8 +102,13 @@ def main():
     select_msg_to_edit_dropdown['values'] = ( "Empty" )
     db = database_editing_class()
     data = db.fetch_all_data()
+    data_of_select_msg_to_edit_dropdown_ere_inserting = []
     for row in data:
-        select_msg_to_edit_dropdown["values"] += (row[1],)
+        data_of_select_msg_to_edit_dropdown_ere_inserting += (row[1],)
+    # 
+    if data_of_select_msg_to_edit_dropdown_ere_inserting != []:
+        select_msg_to_edit_dropdown["values"] = list(set(data_of_select_msg_to_edit_dropdown_ere_inserting))
+
     db.close_connection()
     # select_msg_to_edit_dropdown.place(x=28 ,y=164 ,height=30 ,width=400)
     select_msg_to_edit_dropdown.set("Select A Save Msg to Edit")
@@ -140,4 +151,17 @@ def main():
     root.mainloop()
 
 if __name__ == '__main__' :
-    main()
+    from tkinter import Tk
+    # from tkinter import ttk
+
+    root = Tk()
+    # -----------TITLE+ICON--------------
+    root.title('test')
+    # -----------WINDOWS_SIZE--------------
+    root.geometry('200x100')
+    root.minsize(200,100)
+    root.maxsize(200,100)
+
+    main(window_master=root)
+
+    root.mainloop()

@@ -2,15 +2,17 @@ try :
     import customtkinter as ctk
 except :
     import os; os.system("pip install customtkinter")
+finally:
     import customtkinter as ctk
 
 from database_class_file import database_editing_class
 import save_msg_edit_window
 from tkinter import END ,NORMAL  , DISABLED ,StringVar , Menu , Button
-import datetime ,time ,threading , sys
-import multiprocessing
+import datetime ,time ,threading , os 
+# import multiprocessing
 
-
+# ----------- #
+"""Default values"""
 message_var = ""
 no_message_var = 0
 message_delay_var = 0
@@ -18,24 +20,40 @@ index_var = 0
 message_sent_time_var = "None"
 
 thread_current_time_continuty_teller = True
+# ----------- #
 
 
 class Time:
     """Class for time annotation"""
     pass
-class ExitError(Exception):
-    def __init__(self, message):
-        super().__init__(message)
-        import threading
-        threading.Thread(target=sys.exit).start()
-        self.message = message
+
+class ExitError:
+    """ This class doesn't use exception bcz with exception an new error occur and thi is working with os._exit(1) """
+    def __init__(self):
+        os._exit(1)
 
 def exit():
+    """This function set the 'thread_current_time_continuty_teller'=false 
+    after it in current time thread if -else condition stop the current time displaying and
+    then i call os._exit(1)  in it is its status and it terminate the code immediately """
+    """
+    os._exit(1) vs sys.exit()
+    the os._exit() function is used to exit a process immediately.
+    Unlike the sys.exit() function, which raises a SystemExit exception and allows cleanup code to be executed, 
+    os._exit() terminates the process without calling cleanup handlers, flushing stdio buffers, 
+    or handling any atexit functions.
+    """
+    
     global thread_current_time_continuty_teller 
     thread_current_time_continuty_teller = False
-    sys.exit()
+    thread_current_time.join()
+    ExitError()
+    # os._exit(1)
 
 def current_time() -> None :
+    """IF condition "thread_current_time_continuty_teller == True" is true, 
+    this function keep inserting time in current time entry after every 1 sec 
+    """
     def current_time_thread_func():
         global current_time_entry , thread_current_time_continuty_teller
         while True :
@@ -50,9 +68,14 @@ def current_time() -> None :
     thread_current_time.start()
 
 def edit_save_msg():
-    save_msg_edit_window.main()
+    save_msg_edit_window.main(window_master=root)
 
 def refresh_dropdown():
+    """This function refresh the data in dropdown mean again insert new data instead of old one 
+    in combobox and insert only unique values mean will not insert same values again and again as in database
+    It store all msgs in a list after getting from database and then convert this list in set to uniqify every element
+    in list and then convert this output set in list to give to dropdown
+    """
     global save_msg_dropdown
     db = database_editing_class()
     data = db.fetch_all_data()
@@ -65,7 +88,7 @@ def refresh_dropdown():
     db.close_connection()
 
 def auto_message( message : str ,no_messages : int ,send_delay : int ,index : int , sent_time : str = "Nonestr") -> None :
-        """This funstions will type type {message} {no_messages}"""
+        """This funstions will type type {message} {no_messages} time"""
         import time
         import pyautogui as pag
         msg_sent_text.delete( 0.0,END )
@@ -146,6 +169,7 @@ def send_msg_at_time(message_var , no_message_var , message_delay_var , index_va
             thread_auto_message_send = threading.Thread(target=auto_message , args=(message_var , int(no_message_var) , int(message_delay_var) , int(index_var)))
             thread_auto_message_send.start()
             thread_auto_message_send.join()
+            message_sent_time_var = "None"
             break
         else :
             ...
@@ -190,21 +214,24 @@ def sending_msg_time_validity_check_func(sending_msg_time:Time) ->bool:
     return validity_of_input_send_time
 
 def disable_button_func(tk_button : Button , thread_auto_message_sender : threading ) -> None :
-    """ To disable button after message started to avoid multi threads of thread_auto_message_send """
+    """ To disable button after message started sent to avoid multi threads of thread_auto_message_send """
     def diasable_button_sub_func(tk_button : Button, thread_auto_message_sender : threading):
         tk_button.configure(state=DISABLED)
         thread_auto_message_sender.join()
         tk_button.configure(state=NORMAL)
-    def reset_time_sent_msg_var_func():
-        def reset_time_sent_msg_sub_func():
-            global thread_auto_message_send_at_time , message_sent_time_var
-            thread_auto_message_send_at_time.join()
-            message_sent_time_var = "None"
-        thread_reset_message_send_at_time_var = threading.Thread(target=reset_time_sent_msg_sub_func )
-        thread_reset_message_send_at_time_var.start()
+    # def reset_time_sent_msg_var_func( this_func_is_disabled ):
+    #     # 
+    #     def reset_time_sent_msg_sub_func():
+    #         global thread_auto_message_send_at_time , message_sent_time_var
+    #         thread_auto_message_send_at_time.join()
+    #         message_sent_time_var = "None"
+    #     # 
+    #     # thread_reset_message_send_at_time_var = threading.Thread(target=reset_time_sent_msg_sub_func )
+    #     # thread_reset_message_send_at_time_var.start()
+    #     # 
+    # # reset_time_sent_msg_var_func()
     thread_disable_enable_button = threading.Thread(target=diasable_button_sub_func , args=(tk_button , thread_auto_message_sender))
     thread_disable_enable_button.start()
-    reset_time_sent_msg_var_func()
 
 def start_sending() -> None :
     try :
@@ -217,6 +244,7 @@ def start_sending() -> None :
 
             if message_sent_time_var != "None" :
                 if sending_msg_time_validity_check_func(message_sent_time_var):
+                    msg_sent_text.delete(0.0 , END )
                     msg_sent_text.insert(0.0 , f"Waiting for time {message_sent_time_var}" )
                     error_label.configure(text=f"Waiting for time {message_sent_time_var}"  , fg_color="green")
                     global thread_auto_message_send_at_time
@@ -241,21 +269,25 @@ def start_sending() -> None :
             error_label.configure(text="Please input all value Sent_Time is optional"  , fg_color="red")
     except Exception as error :
         error_label.configure(text=error , fg_color="red")
+        print(error)
     # print(message_var , no_message_var , message_delay_var , index_var , message_sent_time_var)
 
 def save_msg():
+    """save msg in database and refresh the dropdown
+    """
     global save_msg_var , message_entry , save_msg_dropdown
     if message_entry.get() != "" :
         db = database_editing_class()
         db.add_msg(message_entry.get())
-        data = db.fetch_all_data()
-        newvalues_save_msg_dropdown = []
-        for row in data:
-            newvalues_save_msg_dropdown.append(row[1])
-        if newvalues_save_msg_dropdown != [] :
-            newvalues_save_msg_dropdown = list(set(newvalues_save_msg_dropdown))
-            save_msg_dropdown.configure(values=newvalues_save_msg_dropdown)
+        # data = db.fetch_all_data()
+        # newvalues_save_msg_dropdown = []
+        # for row in data:
+        #     newvalues_save_msg_dropdown.append(row[1])
+        # if newvalues_save_msg_dropdown != [] :
+        #     newvalues_save_msg_dropdown = list(set(newvalues_save_msg_dropdown))
+        #     save_msg_dropdown.configure(values=newvalues_save_msg_dropdown)
         db.close_connection()
+        refresh_dropdown()
     else:
         error_label.configure(text="First enter msg"  , bg_color="red" )
 
@@ -263,16 +295,24 @@ def on_dropdown_selected(event):
     ...
 
 def on_save_msg_dropdown_selected(event):
+    """it insert selected msg from dropdown in 'message_entry'  
+    """
     global save_msg_var , message_entry
-    message_entry.delete(0,END)
-    message_entry.insert(0,save_msg_var.get())
+    if (save_msg_selected_in_dropdown:=save_msg_var.get()) != "Empty" :
+        message_entry.delete(0,END)
+        message_entry.insert(0,save_msg_selected_in_dropdown)
 
 def main():
+    global root
     root = ctk.CTk()
     root.title("Auto Message Sender")
     root.resizable(False,True)
-    root.geometry("600x580")
-    root.minsize(width=600 , height=580 )
+    root.geometry("580x630")
+    root.minsize(width=580 , height=630 )
+    # Set the protocol to call the on_close function when the window is closed
+    root.protocol("WM_DELETE_WINDOW", threading.Thread(target=exit).start)
+    # If want icon use it else dont
+    # root.iconbitmap("logo.ico")
 
     # Current label + ENTRY
     global current_time_entry
@@ -296,7 +336,7 @@ def main():
     # Msgs delay
     global message_sent_delay_entry
     ctk.CTkLabel(master=root,text="Msgs Sent Delay :" ,font=("Arial",18) ,height=25 ,width=140 ).place(relx=0.528 ,rely=0.174 )
-    message_sent_delay_entry = ctk.CTkEntry(master=root ,font=("Arial",20) ,height=25 ,width=88 )
+    message_sent_delay_entry = ctk.CTkEntry(master=root ,font=("Arial",20) ,height=25 ,width=98 )
     message_sent_delay_entry.place(relx=0.8 ,rely=0.174)
     message_sent_delay_entry.insert(0,0)
 
@@ -307,8 +347,8 @@ def main():
     global dropdown_var
     dropdown_var = StringVar()
     
-    # Create dropdown Menu
-    dropdown = ctk.CTkComboBox(master=root, variable=dropdown_var ,height=25 ,width=150 , values=["True" , "False"] )
+    # Create INDEX dropdown Menu
+    dropdown = ctk.CTkComboBox(master=root, state="readonly" , variable=dropdown_var ,height=25 ,width=150 , values=["True" , "False"] )
     dropdown.place(relx=0.15 ,rely=0.24)
 
     # ----------------------------------DROPDOWN_end----------------------------
@@ -316,7 +356,7 @@ def main():
     # Msg sent time Label ++ Entry
     global message_sent_time_entry
     ctk.CTkLabel(root,text="Msg sent time :" ,font=("Arial",20) ,height=25 ,width=140 ).place(relx=0.45 ,rely=0.24)
-    message_sent_time_entry = ctk.CTkEntry(root ,font=("Arial",18)  ,height=25 ,width=140 )
+    message_sent_time_entry = ctk.CTkEntry(root ,font=("Arial",18)  ,height=25 ,width=150 )
     message_sent_time_entry.place(relx=0.71 ,rely=0.24)
 
     # ----------------------------------DROPDOWN_FOR_saved_msgs----------------------------
@@ -342,17 +382,17 @@ def main():
     # ----------------------------------DROPDOWN_FOR_saved_msgs_end----------------------------
     # Start Button
     global save_msg_button
-    save_msg_button=ctk.CTkButton(root,text="Save msg" ,font=("Arial",15) , command=save_msg , height=30 ,width=130 )
+    save_msg_button=ctk.CTkButton(root,text="Save msg" ,font=("Arial",15) , command=save_msg , height=30 ,width=145 )
     save_msg_button.place( relx=0.72 , rely=0.315 )
     
     # Start Button
     global sending_button
-    sending_button=ctk.CTkButton(master=root,text="Start Sending" ,font=("Arial",20) , command=start_sending ,height=37 ,width=553 )
+    sending_button=ctk.CTkButton(master=root,text="Start Sending" ,font=("Arial",20) , command=start_sending ,height=37 ,width=550 )
     sending_button.place(relx=0.02 , rely=0.405 )
 
     # Error label
     global error_label
-    error_label = ctk.CTkLabel(root,text="No any error" ,font=("Arial",18) , fg_color="red" ,height=40 ,width=553 ) 
+    error_label = ctk.CTkLabel(root,text="No any error" ,font=("Arial",18) , fg_color="green" ,height=40 ,width=549 ) 
     error_label.place(relx=0.02 ,rely=0.484)
     
     # time taken Label ++ Entry
@@ -360,6 +400,7 @@ def main():
     ctk.CTkLabel(root,text="Time taken :" ,font=("Arial",18) , fg_color="green" ,corner_radius=5 ,height=30 ,width=150 ).place(relx=0.02 ,rely=0.57)
     msg_sent_time_taken_entry = ctk.CTkEntry(root ,font=("Arial",20) ,height=30 ,width=385 )
     msg_sent_time_taken_entry.place(relx=0.3 ,rely=0.57)
+    # msg_sent_time_taken_entry.configure(state=DISABLED)
 
     # No. of msg sent
     global msg_sent_text
@@ -370,7 +411,8 @@ def main():
 
     # ------------------------MENU--------------------
     menubar = Menu(master=root)
-    menubar.add_command(label="Exit" , command=exit)
+    
+    menubar.add_command(label="Exit" , command=threading.Thread(target=exit).start)
     menubar.add_command(label="Edit Save Msgs", command=edit_save_msg)
     menubar.add_command(label="Refresh database", command=refresh_dropdown)
 

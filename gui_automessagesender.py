@@ -10,7 +10,7 @@ import save_msg_edit_window
 
 from tkinter import *
 from tkinter import ttk
-import datetime ,time ,threading , sys
+import datetime ,time ,threading , os
 
 
 message_var = ""
@@ -24,17 +24,29 @@ thread_current_time_continuty_teller = True
 class Time:
     """Class for time annotation"""
     pass
-class ExitError(Exception):
-    def __init__(self, message):
-        super().__init__(message)
-        import threading
-        threading.Thread(target=sys.exit).start()
-        self.message = message
+
+class ExitError:
+    """ This class doesn't use exception bcz with exception an new error occur and thi is working with os._exit(1) """
+    def __init__(self):
+        os._exit(1)
 
 def exit():
-    global thread_current_time_continuty_teller
+    """This function set the 'thread_current_time_continuty_teller'=false 
+    after it in current time thread if -else condition stop the current time displaying and
+    then i call os._exit(1)  in it is its status and it terminate the code immediately """
+    """
+    os._exit(1) vs sys.exit()
+    the os._exit() function is used to exit a process immediately.
+    Unlike the sys.exit() function, which raises a SystemExit exception and allows cleanup code to be executed, 
+    os._exit() terminates the process without calling cleanup handlers, flushing stdio buffers, 
+    or handling any atexit functions.
+    """
+    
+    global thread_current_time_continuty_teller 
     thread_current_time_continuty_teller = False
-    sys.exit()
+    thread_current_time.join()
+    ExitError()
+    # os._exit(1)
 
 def edit_save_msg():
     save_msg_edit_window.main()
@@ -66,18 +78,19 @@ def save_msg():
         error_label.config(text="First enter msg"  , background="red")
 
 def current_time() -> None :
+    """IF condition "thread_current_time_continuty_teller == True" is true, 
+    this function keep inserting time in current time entry after every 1 sec 
+    """
     def current_time_thread():
         global current_time_entry , thread_current_time_continuty_teller
         while True :
             time.sleep(1)
-            current_time_entry.delete(0,END)
-            current_time_entry.insert(0,datetime.datetime.now().strftime("%H:%M:%S"))
-            # if thread_current_time_continuty_teller == True :
-            #     time.sleep(1)
-            #     current_time_entry.delete(0,END)
-            #     current_time_entry.insert(0,datetime.datetime.now().strftime("%H:%M:%S"))
-            # else :
-            #     break
+            if thread_current_time_continuty_teller == True :
+                time.sleep(1)
+                current_time_entry.delete(0,END)
+                current_time_entry.insert(0,datetime.datetime.now().strftime("%H:%M:%S"))
+            else :
+                break
     global thread_current_time
     thread_current_time = threading.Thread(target=current_time_thread)
     thread_current_time.start()
@@ -278,6 +291,8 @@ def main():
     # root.wm_attributes("-topmost", True)
     root.resizable(False,False)
     root.geometry("600x550")
+    # Set the protocol to call the on_close function when the window is closed
+    root.protocol("WM_DELETE_WINDOW", threading.Thread(target=exit).start )
 
     # Current label + ENTRY
     global current_time_entry
@@ -377,7 +392,7 @@ def main():
     # Create the menu 
     menubar =Menu(root)
     # Create the Help menu
-    menubar.add_command(label="Exit", command=exit)
+    menubar.add_command(label="Exit", command=threading.Thread(target=exit).start)
     menubar.add_command(label="Edit Save Msgs", command=edit_save_msg)
     menubar.add_command(label="Refresh database", command=refresh_dropdown)
     # Configure the root to use the menubar
