@@ -35,4 +35,4 @@ It support command line utility
     and install custom tkinter
 
 # > NOTE:
-    For any reason you want to stop it you can drag your mouse to top left corner of your window then it will stop.
+    For any reason you want to stop it you can drag your mouse to top left corner of your window.
